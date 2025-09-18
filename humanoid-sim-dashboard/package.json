@@ -1,0 +1,38 @@
+{
+  "name": "humanoid-sim-dashboard",
+  "version": "1.0.0",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "tsc && vite build && electron-builder",
+    "python-install": "cd python && python install_cuda_pytorch.py"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "concurrently": "^8.0.0",
+    "electron": "^28.0.0",
+    "electron-builder": "^24.0.0",
+    "typescript": "^5.5.0",
+    "vite": "^5.0.0",
+    "wait-on": "^7.0.0"
+  },
+  "dependencies": {
+    "@pixiv/three-vrm": "^2.0.0",
+    "@react-three/drei": "^9.0.0",
+    "@react-three/fiber": "^8.0.0",
+    "chart.js": "^4.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "three": "^0.164.1",
+    "zustand": "^4.0.0",
+    "ws": "^8.0.0"
+  },
+  "build": {
+    "appId": "com.defense.humanoidsim",
+    "productName": "Humanoid Sim Dashboard",
+    "win": { "target": "nsis" },
+    "files": ["dist/**/*", "public/**/*", "python/**/*"]
+  }
+}

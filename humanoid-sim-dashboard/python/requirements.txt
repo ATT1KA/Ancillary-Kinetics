@@ -1,0 +1,8 @@
+numpy==2.3.3
+torch==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
+torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+gymnasium[box2d,atari,mujoco]==1.0.0
+stable-baselines3==2.5.0
+tensorboard==2.18.0
+websockets==12.0
