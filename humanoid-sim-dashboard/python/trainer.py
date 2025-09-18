@@ -7,10 +7,12 @@ import gymnasium as gym
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.logger import configure
-import websocket
 import websockets
 import asyncio
 import numpy as np
+
+# Global model variable
+model = None
 
 # WS server for streams
 async def ws_handler(websocket, path):
@@ -21,13 +23,16 @@ async def ws_handler(websocket, path):
             env = gym.make('Humanoid-v4')
             obs, _ = env.reset(seed=data.get('seed', 42))
             poses = []  # Placeholder: collect joint poses
-            for _ in range(100):  # 100 steps
-                action = model.predict(obs, deterministic=True)[0]
-                obs, reward, terminated, _, _ = env.step(action)
-                poses.append({'joints': obs[:17].tolist()})  # MuJoCo qpos slice
-                if terminated:
-                    break
-            await websocket.send(json.dumps({'type': 'rollout', 'poses': poses, 'reward': reward}))
+            if model is not None:
+                for _ in range(100):  # 100 steps
+                    action = model.predict(obs, deterministic=True)[0]
+                    obs, reward, terminated, _, _ = env.step(action)
+                    poses.append({'joints': obs[:17].tolist()})  # MuJoCo qpos slice
+                    if terminated:
+                        break
+                await websocket.send(json.dumps({'type': 'rollout', 'poses': poses, 'reward': reward}))
+            else:
+                await websocket.send(json.dumps({'error': 'Model not trained yet'}))
 
 def main():
     config = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {'env': 'Humanoid-v4', 'algo': 'PPO', 'timesteps': 10000, 'device': 'cuda'}
@@ -35,6 +40,7 @@ def main():
     print(json.dumps({'type': 'status', 'device': device, 'cuda_count': torch.cuda.device_count() if torch.cuda.is_available() else 0}))
 
     env = DummyVecEnv([lambda: gym.make(config['env'])])
+    global model
     model = PPO("MlpPolicy", env, device=device, verbose=1, tensorboard_log="./logs/")
     model.learn(total_timesteps=config['timesteps'], progress_bar=True)
 

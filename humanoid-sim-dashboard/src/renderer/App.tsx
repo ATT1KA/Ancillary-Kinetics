@@ -7,6 +7,17 @@ import { HumanoidPanel } from './HumanoidPanel';
 import { TrainingPanel } from './TrainingPanel';
 import { MetricsChart } from './MetricsChart';
 
+declare global {
+  interface Window {
+    api: {
+      detectCUDA: () => Promise<boolean>;
+      startTraining: (config: any) => Promise<any>;
+      onMetricsStream: (callback: (data: string) => void) => void;
+      onErrorStream: (callback: (data: string) => void) => void;
+    };
+  }
+}
+
 const App: React.FC = () => {
   const { morphWeights } = useStore();
   const [cudaAvailable, setCudaAvailable] = useState(false);
@@ -14,11 +25,14 @@ const App: React.FC = () => {
 
   useEffect(() => {
     window.api.detectCUDA().then(setCudaAvailable);
-    ipcRenderer.on('metrics-stream', (event, data) => {
+    window.api.onMetricsStream((data) => {
       try {
         const parsed = JSON.parse(data);
         setMetrics((prev) => [...prev, parsed]);
       } catch {}
+    });
+    window.api.onErrorStream((data) => {
+      console.error('Error from Python:', data);
     });
   }, []);
 
